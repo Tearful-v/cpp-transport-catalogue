@@ -5,6 +5,7 @@
 #include <istream>
 #include <iterator>
 #include <string>
+#include <utility>
 
 /**
  * Парсит строку вида "10.123,  -30.1837" и возвращает пару координат (широта, долгота)

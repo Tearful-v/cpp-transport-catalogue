@@ -8,30 +8,21 @@
 #include <string_view>
 #include <unordered_map>
 #include <unordered_set>
-#include <utility>
 #include <vector>
 
 namespace transport_catalogue {
 
     struct Stop {
-        explicit Stop(std::string name) : name(std::move(name)) {}
-        Stop(std::string name, geo::Coordinates coords) : name(std::move(name)), coords(coords) {}
-
-        std::string name = "dummy";
+        std::string name;
         geo::Coordinates coords = {0, 0};
     };
 
     struct Bus {
-        Bus(std::string name, std::vector<Stop*> route) : name(std::move(name)), route(std::move(route)) {}
-
         std::string name;
-        std::vector<Stop*> route;
+        std::vector<const Stop*> route;
     };
 
     struct BusInfo {
-        BusInfo(double length, size_t stops_count, size_t unique_stops_count)
-            : route_length(length), stops(stops_count), unique_stops(unique_stops_count) {}
-
         double route_length = 0.0;
         size_t stops = 0;
         size_t unique_stops = 0;
@@ -46,9 +37,6 @@ namespace transport_catalogue {
         const Bus* FindBus(std::string_view name) const;
         const std::unordered_set<std::string_view>& GetBusesForStop(std::string_view stop_name) const;
         std::optional<BusInfo> GetBusInfo(std::string_view name) const;
-
-    private:
-        Stop* GetOrCreateStop(std::string_view name);
 
     private:
         std::deque<Stop> stops_;

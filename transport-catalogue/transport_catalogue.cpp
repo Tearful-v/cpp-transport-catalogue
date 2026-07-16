@@ -1,7 +1,9 @@
 #include "transport_catalogue.h"
 
+#include <cassert>
 #include <string>
 #include <unordered_set>
+#include <utility>
 
 namespace transport_catalogue {
 
@@ -13,41 +15,28 @@ namespace transport_catalogue {
             return;
         }
 
-        stops_.emplace_back(std::move(name), coords);
+        stops_.push_back(Stop{std::move(name), coords});
 
         Stop& stop = stops_.back();
         name_to_stops_.emplace(stop.name, &stop);
-    }
-
-    Stop* TransportCatalogue::GetOrCreateStop(std::string_view name) {
-        auto it = name_to_stops_.find(name);
-
-        if (it != name_to_stops_.end()) {
-            return it->second;
-        }
-
-        stops_.emplace_back(std::string(name));
-
-        Stop& stop = stops_.back();
-        name_to_stops_.emplace(stop.name, &stop);
-
-        return &stop;
     }
 
     void TransportCatalogue::AddBus(std::string name, const std::vector<std::string_view>& stop_names) {
-        std::vector<Stop*> route;
+        std::vector<const Stop*> route;
         route.reserve(stop_names.size());
 
         for (std::string_view stop_name : stop_names) {
-            route.push_back(GetOrCreateStop(stop_name));
+            const Stop* stop = FindStop(stop_name);
+            assert(stop != nullptr);
+            route.push_back(stop);
         }
 
-        buses_.emplace_back(std::move(name), std::move(route));
+        buses_.push_back(Bus{std::move(name), std::move(route)});
 
         Bus& bus = buses_.back();
         name_to_bus_.emplace(bus.name, &bus);
 
-        for (Stop* stop : bus.route) {
+        for (const Stop* stop : bus.route) {
             stop_to_bus_[stop->name].insert(bus.name);
         }
     }
@@ -97,7 +86,7 @@ namespace transport_catalogue {
             route_length += geo::ComputeDistance(bus->route[i - 1]->coords, bus->route[i]->coords);
         }
 
-        return BusInfo(route_length, stops, unique_stops.size());
+        return BusInfo{route_length, stops, unique_stops.size()};
     }
 
 }
