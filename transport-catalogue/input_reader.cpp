@@ -2,7 +2,9 @@
 
 #include <algorithm>
 #include <cassert>
+#include <istream>
 #include <iterator>
+#include <string>
 
 /**
  * Парсит строку вида "10.123,  -30.1837" и возвращает пару координат (широта, долгота)
@@ -98,15 +100,34 @@ CommandDescription ParseCommandDescription(std::string_view line) {
 void InputReader::ParseLine(std::string_view line) {
     auto command_description = ParseCommandDescription(line);
     if (command_description) {
-        commands_.push_back(std::move(command_description));
+        if (command_description.command == "Stop") {
+            stop_commands_.push_back(std::move(command_description));
+        } else if (command_description.command == "Bus") {
+            bus_commands_.push_back(std::move(command_description));
+        }
     }
 }
 
 void InputReader::ApplyCommands(transport_catalogue::TransportCatalogue& catalogue) const {
-    for (const auto& com : commands_) {
-        if (com.command == "Stop")
-            catalogue.AddStop(com.id, ParseCoordinates(com.description));
-        else if (com.command == "Bus")
-            catalogue.AddBus(com.id, ParseRoute(com.description));
+    for (const auto& com : stop_commands_) {
+        catalogue.AddStop(com.id, ParseCoordinates(com.description));
     }
+
+    for (const auto& com : bus_commands_) {
+        catalogue.AddBus(com.id, ParseRoute(com.description));
+    }
+}
+
+void ReadAndApplyCommands(std::istream& input, transport_catalogue::TransportCatalogue& catalogue) {
+    int base_request_count = 0;
+    input >> base_request_count >> std::ws;
+
+    InputReader reader;
+    for (int i = 0; i < base_request_count; ++i) {
+        std::string line;
+        std::getline(input, line);
+        reader.ParseLine(line);
+    }
+
+    reader.ApplyCommands(catalogue);
 }

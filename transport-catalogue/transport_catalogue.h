@@ -3,55 +3,38 @@
 #include "geo.h"
 
 #include <deque>
-#include <set>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
 namespace transport_catalogue {
 
-    class Stop {
-    public:
-        Stop() = default;
+    struct Stop {
+        explicit Stop(std::string name) : name(std::move(name)) {}
+        Stop(std::string name, geo::Coordinates coords) : name(std::move(name)), coords(coords) {}
 
-        explicit Stop(std::string name) : name_(std::move(name)) {}
-
-        Stop(std::string name, geo::Coordinates coords) : name_(std::move(name)), coords_(coords) {}
-
-        void ChangeCoords(geo::Coordinates coords) noexcept {
-            coords_ = coords;
-        }
-
-        std::string_view GetName() const noexcept {
-            return name_;
-        }
-
-        const geo::Coordinates& GetCoordinates() const noexcept {
-            return coords_;
-        }
-
-    private:
-        std::string name_ = "dummy";
-        geo::Coordinates coords_ = {0, 0};
+        std::string name = "dummy";
+        geo::Coordinates coords = {0, 0};
     };
 
-    class Bus {
-    public:
-        Bus(std::string name, std::vector<Stop*> route) : name_(std::move(name)), route_(std::move(route)) {}
+    struct Bus {
+        Bus(std::string name, std::vector<Stop*> route) : name(std::move(name)), route(std::move(route)) {}
 
-        std::string_view GetName() const noexcept {
-            return name_;
-        }
+        std::string name;
+        std::vector<Stop*> route;
+    };
 
-        const std::vector<Stop*>& GetRoute() const noexcept {
-            return route_;
-        }
+    struct BusInfo {
+        BusInfo(double length, size_t stops_count, size_t unique_stops_count)
+            : route_length(length), stops(stops_count), unique_stops(unique_stops_count) {}
 
-    private:
-        std::string name_ = "dummy";
-        std::vector<Stop*> route_;
+        double route_length = 0.0;
+        size_t stops = 0;
+        size_t unique_stops = 0;
     };
 
     class TransportCatalogue {
@@ -61,7 +44,8 @@ namespace transport_catalogue {
 
         const Stop* FindStop(std::string_view name) const;
         const Bus* FindBus(std::string_view name) const;
-        const std::set<std::string_view>& GetBusesForStop(std::string_view stop_name) const;
+        const std::unordered_set<std::string_view>& GetBusesForStop(std::string_view stop_name) const;
+        std::optional<BusInfo> GetBusInfo(std::string_view name) const;
 
     private:
         Stop* GetOrCreateStop(std::string_view name);
@@ -72,7 +56,7 @@ namespace transport_catalogue {
 
         std::unordered_map<std::string_view, Stop*> name_to_stops_;
         std::unordered_map<std::string_view, Bus*> name_to_bus_;
-        std::unordered_map<std::string_view, std::set<std::string_view>> stop_to_bus_;
+        std::unordered_map<std::string_view, std::unordered_set<std::string_view>> stop_to_bus_;
     };
 
 }

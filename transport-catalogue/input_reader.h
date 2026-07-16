@@ -1,4 +1,5 @@
 #pragma once
+#include <iostream>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -34,5 +35,8 @@ public:
     void ApplyCommands(transport_catalogue::TransportCatalogue& catalogue) const;
 
 private:
-    std::vector<CommandDescription> commands_;
+    std::vector<CommandDescription> stop_commands_;
+    std::vector<CommandDescription> bus_commands_;
 };
+
+void ReadAndApplyCommands(std::istream& input, transport_catalogue::TransportCatalogue& catalogue);
