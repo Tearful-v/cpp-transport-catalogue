@@ -1,6 +1,5 @@
 #include "transport_catalogue.h"
 
-#include <cassert>
 #include <string>
 #include <unordered_set>
 #include <utility>
@@ -27,7 +26,9 @@ namespace transport_catalogue {
 
         for (std::string_view stop_name : stop_names) {
             const Stop* stop = FindStop(stop_name);
-            assert(stop != nullptr);
+            if (stop == nullptr) {
+                return;
+            }
             route.push_back(stop);
         }
 
