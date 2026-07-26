@@ -1,5 +1,6 @@
 #include "transport_catalogue.h"
 
+#include <stdexcept>
 #include <string>
 #include <unordered_set>
 #include <utility>
@@ -74,22 +75,28 @@ namespace transport_catalogue {
     }
 
     void TransportCatalogue::AddStopsDistance(std::string_view from, std::string_view to, int distance) {
-        Stop* fr_obj= FindStop(from);
-        Stop* to_obj = FindStop(to);
+        const Stop* from_stop = FindStop(from);
+        const Stop* to_stop = FindStop(to);
 
-        if (fr_obj == nullptr || to_obj == nullptr) {
-            throw std::logic_error("Stop doesnt exist") //По идее, гарантируется, что такой ситуации не произойдет, но было бы неплохо это проверять
+        if (from_stop == nullptr || to_stop == nullptr) {
+            throw std::logic_error("Stop does not exist");
         }
 
-        stops_distance_.insert({fr_obj, to_obj}, std::move(distance));
+        stops_distance_[{from_stop->name, to_stop->name}] = distance;
     }
 
-    const int TransportCatalogue::GetStopsDistance(std::string_view from, std::string_view to) const {
+    int TransportCatalogue::GetStopsDistance(std::string_view from, std::string_view to) const {
         auto it = stops_distance_.find({from, to});
-        if (it == stops_distance_.end()) {
-            throw std::logic_error("Distance no specified") //То же самое, что и с добавлением
+        if (it != stops_distance_.end()) {
+            return it->second;
         }
-        return it->second;
+
+        it = stops_distance_.find({to, from});
+        if (it != stops_distance_.end()) {
+            return it->second;
+        }
+
+        throw std::logic_error("Distance is not specified");
     }
 
     std::optional<BusInfo> TransportCatalogue::GetBusInfo(std::string_view name) const {
