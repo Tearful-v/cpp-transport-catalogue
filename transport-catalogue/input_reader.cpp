@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <istream>
 #include <iterator>
+#include <stdexcept>
 #include <string>
 #include <utility>
 
@@ -76,6 +77,52 @@ std::vector<std::string_view> ParseRoute(std::string_view route) {
     return results;
 }
 
+// парсит расстояния до остановок
+std::vector<std::pair<std::string_view, int>> ParseDistanceToStops(const CommandDescription& command) {
+    std::vector<std::pair<std::string_view, int>> result;
+    std::string_view str = command.description;
+
+    size_t comma_pos = str.find(',');
+    if (comma_pos == std::string::npos) {
+        throw std::runtime_error("Wrong format");
+    }
+    comma_pos = str.find(',' , comma_pos + 1);
+    if (comma_pos == std::string::npos) {
+        return result;
+    }
+    str.remove_prefix(comma_pos + 1);
+    
+    while (!str.empty()) {
+        size_t space = str.find_first_not_of(' ');
+        if (space == std::string::npos) {
+            break;
+        }
+        str.remove_prefix(space);
+
+        size_t pos = str.find('m');
+        if (pos == std::string::npos) {
+            throw std::runtime_error("Wrong format");
+        }
+
+        int distance = std::stoi(std::string(str.substr(0, pos)));
+        str.remove_prefix(pos + 5); // тут убираю (pos+1) - буква m и еще 4 символа на конструкцию " to "
+        
+        size_t comma = str.find(',');
+        std::string_view stop_name;
+        if (comma == std::string::npos) {
+            stop_name = str;
+            str.remove_prefix(str.size());
+        } else {
+            stop_name = str.substr(0, comma);
+            str.remove_prefix(comma + 1);
+        }
+
+        result.push_back({Trim(stop_name), distance});
+    }
+
+    return result;
+}
+
 CommandDescription ParseCommandDescription(std::string_view line) {
     auto colon_pos = line.find(':');
     if (colon_pos == line.npos) {
@@ -111,6 +158,12 @@ void InputReader::ParseLine(std::string_view line) {
 void InputReader::ApplyCommands(transport_catalogue::TransportCatalogue& catalogue) const {
     for (const auto& com : stop_commands_) {
         catalogue.AddStop(com.id, ParseCoordinates(com.description));
+    }
+
+    for (const auto& com : stop_commands_) {
+        for (const auto& dist : ParseDistanceToStops(com)) {
+            catalogue.AddStopsDistance(com.id, dist.first, dist.second);
+        }
     }
 
     for (const auto& com : bus_commands_) {
