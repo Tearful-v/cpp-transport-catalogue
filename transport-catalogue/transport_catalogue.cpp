@@ -73,6 +73,25 @@ namespace transport_catalogue {
         return it->second;
     }
 
+    void TransportCatalogue::AddStopsDistance(std::string_view from, std::string_view to, int distance) {
+        Stop* fr_obj= FindStop(from);
+        Stop* to_obj = FindStop(to);
+
+        if (fr_obj == nullptr || to_obj == nullptr) {
+            throw std::logic_error("Stop doesnt exist") //По идее, гарантируется, что такой ситуации не произойдет, но было бы неплохо это проверять
+        }
+
+        stops_distance_.insert({fr_obj, to_obj}, std::move(distance));
+    }
+
+    const int TransportCatalogue::GetStopsDistance(std::string_view from, std::string_view to) const {
+        auto it = stops_distance_.find({from, to});
+        if (it == stops_distance_.end()) {
+            throw std::logic_error("Distance no specified") //То же самое, что и с добавлением
+        }
+        return it->second;
+    }
+
     std::optional<BusInfo> TransportCatalogue::GetBusInfo(std::string_view name) const {
         const Bus* bus = FindBus(name);
         if (bus == nullptr) {
