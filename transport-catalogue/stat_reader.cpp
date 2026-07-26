@@ -19,7 +19,9 @@ static void PrintBusStat(const transport_catalogue::TransportCatalogue& transpor
 
     output << std::setprecision(6);
     output << "Bus " << bus_name << ": " << bus_info->stops << " stops on route, "
-           << bus_info->unique_stops << " unique stops, " << bus_info->route_length << " route length\n";
+        << bus_info->unique_stops << " unique stops, "
+        << bus_info->route_length << " route length, "
+        << bus_info->curvature << " curvature\n";
 }
 
 static void PrintStopStat(const transport_catalogue::TransportCatalogue& transport_catalogue, std::string_view stop_name,

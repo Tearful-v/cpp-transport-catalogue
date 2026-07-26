@@ -108,12 +108,16 @@ namespace transport_catalogue {
         size_t stops = bus->route.size();
         std::unordered_set<const Stop*> unique_stops(bus->route.begin(), bus->route.end());
 
-        double route_length = 0.0;
+        int route_length = 0;
+        double geo_length = 0.0;
         for (size_t i = 1; i < bus->route.size(); ++i) {
-            route_length += geo::ComputeDistance(bus->route[i - 1]->coords, bus->route[i]->coords);
+            route_length += GetStopsDistance(bus->route[i - 1]->name, bus->route[i]->name);
+            geo_length += geo::ComputeDistance(bus->route[i - 1]->coords, bus->route[i]->coords);
         }
 
-        return BusInfo{route_length, stops, unique_stops.size()};
+        double curvature = static_cast<double>(route_length) / geo_length;
+
+        return BusInfo{route_length, stops, unique_stops.size(), curvature};
     }
 
 }

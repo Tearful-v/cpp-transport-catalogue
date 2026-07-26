@@ -30,7 +30,7 @@ namespace transport_catalogue {
     };
 
     struct BusInfo {
-        double route_length = 0.0;
+        int route_length = 0;
         size_t stops = 0;
         size_t unique_stops = 0;
         double curvature = 0.0;
