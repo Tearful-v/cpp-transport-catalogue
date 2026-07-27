@@ -74,12 +74,12 @@ namespace transport_catalogue {
         return it->second;
     }
 
-    void TransportCatalogue::AddStopsDistance(std::string_view from, std::string_view to, int distance) {
+    void TransportCatalogue::SetStopsDistance(std::string_view from, std::string_view to, int distance) {
         const Stop* from_stop = FindStop(from);
         const Stop* to_stop = FindStop(to);
 
         if (from_stop == nullptr || to_stop == nullptr) {
-            throw std::logic_error("Stop does not exist");
+            return;
         }
 
         stops_distance_[{from_stop->name, to_stop->name}] = distance;
@@ -93,7 +93,7 @@ namespace transport_catalogue {
 
         it = stops_distance_.find({to, from});
         if (it != stops_distance_.end()) {
-            return it->second;
+            return 0;
         }
 
         throw std::logic_error("Distance is not specified");

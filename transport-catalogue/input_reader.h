@@ -7,6 +7,8 @@
 #include "geo.h"
 #include "transport_catalogue.h"
 
+namespace input_reader {
+
 struct CommandDescription {
     // Определяет, задана ли команда (поле command непустое)
     explicit operator bool() const {
@@ -34,3 +36,5 @@ private:
 };
 
 void ReadAndApplyCommands(std::istream& input, transport_catalogue::TransportCatalogue& catalogue);
+
+}

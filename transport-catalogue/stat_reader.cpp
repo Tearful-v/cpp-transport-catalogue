@@ -9,7 +9,10 @@
 #include <string>
 #include <vector>
 
-static void PrintBusStat(const transport_catalogue::TransportCatalogue& transport_catalogue, std::string_view bus_name,
+namespace stat_reader {
+namespace {
+
+void PrintBusStat(const transport_catalogue::TransportCatalogue& transport_catalogue, std::string_view bus_name,
               std::ostream& output) {
     auto bus_info = transport_catalogue.GetBusInfo(bus_name);
     if (!bus_info) {
@@ -24,7 +27,7 @@ static void PrintBusStat(const transport_catalogue::TransportCatalogue& transpor
         << bus_info->curvature << " curvature\n";
 }
 
-static void PrintStopStat(const transport_catalogue::TransportCatalogue& transport_catalogue, std::string_view stop_name,
+void PrintStopStat(const transport_catalogue::TransportCatalogue& transport_catalogue, std::string_view stop_name,
                std::ostream& output) {
     const transport_catalogue::Stop* stop = transport_catalogue.FindStop(stop_name);
     if (stop == nullptr) {
@@ -48,6 +51,7 @@ static void PrintStopStat(const transport_catalogue::TransportCatalogue& transpo
     output << '\n';
 }
 
+}  // namespace
 
 void ParseAndPrintStat(const transport_catalogue::TransportCatalogue& transport_catalogue, std::string_view request,
                        std::ostream& output) {
@@ -72,4 +76,6 @@ void ReadAndPrintStats(std::istream& input, std::ostream& output,
         std::getline(input, line);
         ParseAndPrintStat(transport_catalogue, line, output);
     }
+}
+
 }

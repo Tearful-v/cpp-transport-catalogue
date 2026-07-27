@@ -6,6 +6,6 @@
 int main() {
     transport_catalogue::TransportCatalogue catalogue;
 
-    ReadAndApplyCommands(std::cin, catalogue);
-    ReadAndPrintStats(std::cin, std::cout, catalogue);
+    input_reader::ReadAndApplyCommands(std::cin, catalogue);
+    stat_reader::ReadAndPrintStats(std::cin, std::cout, catalogue);
 }

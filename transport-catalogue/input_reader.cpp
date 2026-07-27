@@ -7,6 +7,9 @@
 #include <string>
 #include <utility>
 
+namespace input_reader {
+namespace {
+
 /**
  * Парсит строку вида "10.123,  -30.1837" и возвращает пару координат (широта, долгота)
  */
@@ -77,9 +80,14 @@ std::vector<std::string_view> ParseRoute(std::string_view route) {
     return results;
 }
 
+struct StopDistance { //вспомогательная структура
+    std::string_view stop_name;
+    int distance = 0;
+};
+
 // парсит расстояния до остановок
-std::vector<std::pair<std::string_view, int>> ParseDistanceToStops(const CommandDescription& command) {
-    std::vector<std::pair<std::string_view, int>> result;
+std::vector<StopDistance> ParseDistanceToStops(const CommandDescription& command) {
+    std::vector<StopDistance> result;
     std::string_view str = command.description;
 
     size_t comma_pos = str.find(',');
@@ -91,7 +99,7 @@ std::vector<std::pair<std::string_view, int>> ParseDistanceToStops(const Command
         return result;
     }
     str.remove_prefix(comma_pos + 1);
-    
+
     while (!str.empty()) {
         size_t space = str.find_first_not_of(' ');
         if (space == std::string::npos) {
@@ -105,8 +113,15 @@ std::vector<std::pair<std::string_view, int>> ParseDistanceToStops(const Command
         }
 
         int distance = std::stoi(std::string(str.substr(0, pos)));
-        str.remove_prefix(pos + 5); // тут убираю (pos+1) - буква m и еще 4 символа на конструкцию " to "
-        
+        str.remove_prefix(pos + 1); // убрал m
+
+        std::string_view search = " to ";
+        size_t s_pos = str.find(search);
+        if (s_pos == std::string::npos) {
+            throw std::runtime_error("Wrong format");
+        }
+        str.remove_prefix(s_pos + search.size());
+
         size_t comma = str.find(',');
         std::string_view stop_name;
         if (comma == std::string::npos) {
@@ -144,6 +159,8 @@ CommandDescription ParseCommandDescription(std::string_view line) {
             std::string(line.substr(colon_pos + 1))};
 }
 
+} //безымянный namspace
+
 void InputReader::ParseLine(std::string_view line) {
     auto command_description = ParseCommandDescription(line);
     if (command_description) {
@@ -162,7 +179,7 @@ void InputReader::ApplyCommands(transport_catalogue::TransportCatalogue& catalog
 
     for (const auto& com : stop_commands_) {
         for (const auto& dist : ParseDistanceToStops(com)) {
-            catalogue.AddStopsDistance(com.id, dist.first, dist.second);
+            catalogue.SetStopsDistance(com.id, dist.stop_name, dist.distance);
         }
     }
 
@@ -183,4 +200,6 @@ void ReadAndApplyCommands(std::istream& input, transport_catalogue::TransportCat
     }
 
     reader.ApplyCommands(catalogue);
+}
+
 }
