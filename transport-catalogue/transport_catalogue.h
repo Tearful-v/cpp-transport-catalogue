@@ -53,7 +53,7 @@ namespace transport_catalogue {
         std::deque<Stop> stops_;
         std::deque<Bus> buses_;
 
-        std::unordered_map<std::string_view, Stop*> name_to_stops_;
+        std::unordered_map<std::string_view, const Stop*> name_to_stops_;
         std::unordered_map<std::string_view, const Bus*> name_to_bus_;
         std::unordered_map<std::string_view, std::unordered_set<std::string_view>> stop_to_bus_;
         std::unordered_map<std::pair<std::string_view, std::string_view>, int, StopsPairHasher> stops_distance_;

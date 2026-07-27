@@ -11,7 +11,6 @@ namespace transport_catalogue {
         auto it = name_to_stops_.find(name);
 
         if (it != name_to_stops_.end()) {
-            it->second->coords = coords;
             return;
         }
 
@@ -93,10 +92,10 @@ namespace transport_catalogue {
 
         it = stops_distance_.find({to, from});
         if (it != stops_distance_.end()) {
-            return 0;
+            return it->second;
         }
 
-        throw std::logic_error("Distance is not specified");
+        return 0;
     }
 
     std::optional<BusInfo> TransportCatalogue::GetBusInfo(std::string_view name) const {
