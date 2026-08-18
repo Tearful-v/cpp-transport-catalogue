@@ -1,11 +1,16 @@
-#include <iostream>
+#include "json.h"
+#include "transport_catalogue.h"
+#include "json_reader.h"
 
-#include "input_reader.h"
-#include "stat_reader.h"
+#include <iostream>
 
 int main() {
     transport_catalogue::TransportCatalogue catalogue;
 
-    input_reader::ReadAndApplyCommands(std::cin, catalogue);
-    stat_reader::ReadAndPrintStats(std::cin, std::cout, catalogue);
+    json::Document document = json::Load(std::cin);
+    json_reader::JsonReader reader(document);
+
+    reader.FillCatalogue(catalogue);
+
+    json::Print(reader.ProcessRequests(catalogue), std::cout);
 }

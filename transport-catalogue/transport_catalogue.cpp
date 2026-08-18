@@ -1,11 +1,16 @@
 #include "transport_catalogue.h"
 
-#include <stdexcept>
 #include <string>
 #include <unordered_set>
 #include <utility>
+#include <vector>
+#include <algorithm>
 
 namespace transport_catalogue {
+
+using domain::Stop;
+using domain::Bus;
+using domain::BusInfo;
 
     void TransportCatalogue::AddStop(std::string name, geo::Coordinates coords) {
         auto it = name_to_stops_.find(name);
@@ -20,7 +25,19 @@ namespace transport_catalogue {
         name_to_stops_.emplace(stop.name, &stop);
     }
 
-    void TransportCatalogue::AddBus(std::string name, const std::vector<std::string_view>& stop_names) {
+    std::vector<const Bus*> TransportCatalogue::GetAllBuses() const {
+        std::vector<const Bus*> result;
+        result.reserve(name_to_bus_.size());
+        for(auto& [name, adress] : name_to_bus_) {
+            result.push_back(adress);
+        }
+        std::sort(result.begin(), result.end(), [](const Bus* lhs, const Bus* rhs) {
+            return lhs->name < rhs->name;
+        });
+        return result;
+    }
+
+    void TransportCatalogue::AddBus(std::string name, const std::vector<std::string_view>& stop_names, bool is_roundtrip) {
         std::vector<const Stop*> route;
         route.reserve(stop_names.size());
 
@@ -32,7 +49,7 @@ namespace transport_catalogue {
             route.push_back(stop);
         }
 
-        buses_.push_back(Bus{std::move(name), std::move(route)});
+        buses_.push_back(Bus{std::move(name), std::move(route), is_roundtrip});
 
         Bus& bus = buses_.back();
         name_to_bus_.emplace(bus.name, &bus);
@@ -119,4 +136,4 @@ namespace transport_catalogue {
         return BusInfo{route_length, stops, unique_stops.size(), curvature};
     }
 
-}
+} //transport_catalogue
