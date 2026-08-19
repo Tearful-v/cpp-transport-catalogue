@@ -9,32 +9,9 @@
 #include <vector>
 
 namespace json_reader {
+namespace {
 
-    void ApplyStopCommands(const std::vector<StopCommand>& commands, transport_catalogue::TransportCatalogue& catalogue) {
-        for (auto& com : commands) {
-            catalogue.AddStop(com.name, com.coords);
-        }
-        for (auto& com: commands) {
-            for (auto& stopinfo : com.road_distances) {
-                catalogue.SetStopsDistance(com.name, stopinfo.first, stopinfo.second);
-            }
-        }
-    }
-
-    void ApplyBusCommands(const std::vector<BusCommand>& commands, transport_catalogue::TransportCatalogue& catalogue) {
-        for (const BusCommand& bus : commands) {
-            std::vector<std::string_view> stop_names;
-            stop_names.reserve(bus.stops.size());
-
-            for (const std::string& stop_name : bus.stops) {
-                stop_names.push_back(stop_name);
-            }
-
-            catalogue.AddBus(bus.name, stop_names, bus.is_roundtrip);
-        }
-    }//не срослось с интерфейсом каталога пришлось добавить прослойку с string_view, пока не придумал как иначе
-
-    svg::Point ParsePoint(json::Node node) {
+    svg::Point ParsePoint(const json::Node& node) {
         const json::Array& array = node.AsArray();
         return {array[0].AsDouble(), array[1].AsDouble()};
     }
@@ -60,6 +37,25 @@ namespace json_reader {
             static_cast<uint8_t>(color[2].AsInt()),
             color[3].AsDouble()
         };
+    }
+
+} // namespace
+
+    void JsonReader::ApplyStopCommands(const std::vector<StopCommand>& commands, transport_catalogue::TransportCatalogue& catalogue) const {
+        for (const auto& com : commands) {
+            catalogue.AddStop(com.name, com.coords);
+        }
+        for (const auto& com: commands) {
+            for (const auto& stopinfo : com.road_distances) {
+                catalogue.SetStopsDistance(com.name, stopinfo.first, stopinfo.second);
+            }
+        }
+    }
+
+    void JsonReader::ApplyBusCommands(const std::vector<BusCommand>& commands, transport_catalogue::TransportCatalogue& catalogue) const {
+        for (const BusCommand& bus : commands) {
+            catalogue.AddBus(bus.name, bus.stops, bus.is_roundtrip);
+        }
     }
 
     map_render::RenderSettings JsonReader::GetRenderSettings() const {
@@ -108,7 +104,7 @@ namespace json_reader {
 
                 std::map<std::string, int> tmp;
                 const json::Dict& dicts = command.at("road_distances").AsMap();
-                for (auto [name, dist] : dicts) {
+                for (const auto& [name, dist] : dicts) {
                     tmp[name] = dist.AsInt();
                 }
                 stop.road_distances = std::move(tmp);
@@ -137,6 +133,67 @@ namespace json_reader {
         ApplyBusCommands(buses, catalogue);
     }
 
+    json::Dict JsonReader::MakeStopResponse(const json::Dict& request, const transport_catalogue::TransportCatalogue& catalogue) const {
+        json::Dict answer;
+        answer["request_id"] = request.at("id").AsInt();
+
+        const std::string& name = request.at("name").AsString();
+        const domain::Stop* stop = catalogue.FindStop(name);
+        if (stop == nullptr) {
+            answer["error_message"] = std::string("not found");
+            return answer;
+        }
+
+        const auto& buses = catalogue.GetBusesForStop(name);
+        std::vector<std::string_view> sorted_buses(buses.begin(), buses.end());
+        std::sort(sorted_buses.begin(), sorted_buses.end());
+
+        json::Array buses_array;
+        for (std::string_view bus_name : sorted_buses) {
+            buses_array.push_back(std::string(bus_name));
+        }
+
+        answer["buses"] = std::move(buses_array);
+        return answer;
+    }
+
+    json::Dict JsonReader::MakeBusResponse(const json::Dict& request, const transport_catalogue::TransportCatalogue& catalogue) const {
+        json::Dict answer;
+        answer["request_id"] = request.at("id").AsInt();
+
+        const std::string& name = request.at("name").AsString();
+        auto bus_info = catalogue.GetBusInfo(name);
+        if (!bus_info) {
+            answer["error_message"] = std::string("not found");
+            return answer;
+        }
+
+        answer["curvature"] = bus_info->curvature;
+        answer["route_length"] = bus_info->route_length;
+        answer["stop_count"] = static_cast<int>(bus_info->stops);
+        answer["unique_stop_count"] = static_cast<int>(bus_info->unique_stops);
+        return answer;
+    }
+
+    json::Dict JsonReader::MakeMapResponse(const json::Dict& request, const transport_catalogue::TransportCatalogue& catalogue) const {
+        json::Dict answer;
+        answer["request_id"] = request.at("id").AsInt();
+
+        map_render::RenderSettings settings = GetRenderSettings();
+        map_render::MapRender renderer(settings);
+        svg::Document map = renderer.RenderMap(catalogue);
+
+        std::ostringstream buf;
+        map.Render(buf);
+
+        std::string map_str = buf.str();
+        if (!map_str.empty() && map_str.back() == '\n') {
+            map_str.pop_back();
+        }
+        answer["map"] = std::move(map_str);
+        return answer;
+    }
+
     json::Document JsonReader::ProcessRequests(const transport_catalogue::TransportCatalogue &catalogue) const {
         const json::Node& root = doc_.GetRoot();
         const json::Dict& root_dict = root.AsMap();
@@ -146,50 +203,14 @@ namespace json_reader {
 
         for (const json::Node& request : stat_requests) {
             const json::Dict& com = request.AsMap();
-            json::Dict answer;
-            const int request_id = com.at("id").AsInt();
-            answer["request_id"] = request_id;
 
             if (com.at("type").AsString() == "Stop") {
-                const std::string& name = com.at("name").AsString();
-                const domain::Stop* stop = catalogue.FindStop(name);
-                if (stop == nullptr) {
-                    answer["error_message"] = std::string("not found");
-                } else {
-                    const auto& buses = catalogue.GetBusesForStop(name);
-                    std::vector<std::string_view> sorted_buses(buses.begin(), buses.end());
-                    std::sort(sorted_buses.begin(), sorted_buses.end());
-
-                    json::Array buses_array;
-                    for (std::string_view bus_name : sorted_buses) {
-                        buses_array.push_back(std::string(bus_name));
-                    }
-
-                    answer["buses"] = std::move(buses_array);
-                }
+                answers.push_back(MakeStopResponse(com, catalogue));
             } else if (com.at("type").AsString() == "Bus") {
-                const std::string& name = com.at("name").AsString();
-                auto bus_info = catalogue.GetBusInfo(name);
-                if (!bus_info) {
-                    answer["error_message"] = std::string("not found");
-                } else {
-                    answer["curvature"] = bus_info->curvature;
-                    answer["route_length"] = static_cast<double>(bus_info->route_length);
-                    answer["stop_count"] = static_cast<int>(bus_info->stops);
-                    answer["unique_stop_count"] = static_cast<int>(bus_info->unique_stops);
-                }
+                answers.push_back(MakeBusResponse(com, catalogue));
             } else if (com.at("type").AsString() == "Map") {
-                map_render::RenderSettings settings = GetRenderSettings();
-                map_render::MapRender renderer(settings);
-                svg::Document map = renderer.RenderMap(catalogue);
-
-                std::ostringstream buf;
-                map.Render(buf);
-                std::string map_str = buf.str();
-                answer["map"] = std::move(map_str);
+                answers.push_back(MakeMapResponse(com, catalogue));
             }
-
-            answers.push_back(std::move(answer));
         }
 
         return json::Document{answers};

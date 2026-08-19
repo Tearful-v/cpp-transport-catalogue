@@ -37,11 +37,11 @@ using domain::BusInfo;
         return result;
     }
 
-    void TransportCatalogue::AddBus(std::string name, const std::vector<std::string_view>& stop_names, bool is_roundtrip) {
+    void TransportCatalogue::AddBus(std::string name, const std::vector<std::string>& stop_names, bool is_roundtrip) {
         std::vector<const Stop*> route;
         route.reserve(stop_names.size());
 
-        for (std::string_view stop_name : stop_names) {
+        for (const std::string& stop_name : stop_names) {
             const Stop* stop = FindStop(stop_name);
             if (stop == nullptr) {
                 return;

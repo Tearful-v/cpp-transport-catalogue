@@ -30,6 +30,12 @@ namespace json_reader {
         map_render::RenderSettings GetRenderSettings() const;
 
     private:
+        void ApplyStopCommands(const std::vector<StopCommand>& commands, transport_catalogue::TransportCatalogue& catalogue) const;
+        void ApplyBusCommands(const std::vector<BusCommand>& commands, transport_catalogue::TransportCatalogue& catalogue) const;
+        json::Dict MakeStopResponse(const json::Dict& request, const transport_catalogue::TransportCatalogue& catalogue) const;
+        json::Dict MakeBusResponse(const json::Dict& request, const transport_catalogue::TransportCatalogue& catalogue) const;
+        json::Dict MakeMapResponse(const json::Dict& request, const transport_catalogue::TransportCatalogue& catalogue) const;
+
         const json::Document &doc_;
     };
 

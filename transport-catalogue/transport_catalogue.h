@@ -16,7 +16,7 @@ namespace transport_catalogue {
     class TransportCatalogue {
     public:
         void AddStop(std::string name, geo::Coordinates coords);
-        void AddBus(std::string name, const std::vector<std::string_view>& stop_names, bool is_roundtrip = false);
+        void AddBus(std::string name, const std::vector<std::string>& stop_names, bool is_roundtrip = false);
         void SetStopsDistance(std::string_view from, std::string_view to, int distance);
 
         const domain::Stop* FindStop(std::string_view name) const;
