@@ -69,34 +69,34 @@ public:
 
     Owner& SetFillColor(Color color) {
         fill_color_ = color;
-        return AsOnwer();
+        return AsOwner();
     }
 
     Owner& SetStrokeColor(Color color) {
         stroke_color_ = color;
-        return AsOnwer();
+        return AsOwner();
     }
 
     Owner& SetStrokeWidth(double width) {
         stroke_width_ = width;
-        return AsOnwer();
+        return AsOwner();
     }
 
     Owner& SetStrokeLineCap(StrokeLineCap line_cap) {
         stroke_line_cap_ = line_cap;
-        return AsOnwer();
+        return AsOwner();
     }
 
     Owner& SetStrokeLineJoin(StrokeLineJoin line_join) {
         stroke_line_join_ = line_join;
-        return AsOnwer();
+        return AsOwner();
     }
 
 protected:
     ~PathProps() = default;
 
 private:
-    Owner& AsOnwer() {
+    Owner& AsOwner() {
         return static_cast<Owner&>(*this);
     }
 
@@ -238,7 +238,7 @@ public:
 
     // Прочие данные и методы, необходимые для реализации элемента <text>
 private:
-    void RenderObject(const RenderContext& cotext) const override;
+    void RenderObject(const RenderContext& context) const override;
 
     Point pos_;
     Point offset_;

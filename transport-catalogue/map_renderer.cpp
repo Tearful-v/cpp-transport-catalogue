@@ -1,12 +1,29 @@
 #include "map_renderer.h"
 #include "domain.h"
 
+#include <algorithm>
+#include <deque>
 #include <map>
 #include <string>
 #include <string_view>
 #include <vector>
 
 namespace {
+
+    std::vector<const domain::Bus*> GetSortedBuses(const std::deque<domain::Bus>& buses) {
+        std::vector<const domain::Bus*> result;
+        result.reserve(buses.size());
+
+        for (const domain::Bus& bus : buses) {
+            result.push_back(&bus);
+        }
+
+        std::sort(result.begin(), result.end(), [](const domain::Bus* lhs, const domain::Bus* rhs) {
+            return lhs->name < rhs->name;
+        });
+
+        return result;
+    }
 
     void AddBusLabel(svg::Document& doc, svg::Point point, const std::string& bus_name,
                      const svg::Color& color, const map_render::RenderSettings& settings) {
@@ -149,7 +166,7 @@ namespace map_render {
 
     svg::Document MapRender::RenderMap(const transport_catalogue::TransportCatalogue& catalogue) const {
         svg::Document doc;
-        std::vector<const domain::Bus*> buses = catalogue.GetAllBuses();
+        std::vector<const domain::Bus*> buses = GetSortedBuses(catalogue.GetAllBuses());
         std::vector<geo::Coordinates> coords;
         for (auto bus : buses) {
             if (bus->route.empty()) {

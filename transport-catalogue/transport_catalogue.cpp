@@ -3,8 +3,6 @@
 #include <string>
 #include <unordered_set>
 #include <utility>
-#include <vector>
-#include <algorithm>
 
 namespace transport_catalogue {
 
@@ -25,16 +23,8 @@ using domain::BusInfo;
         name_to_stops_.emplace(stop.name, &stop);
     }
 
-    std::vector<const Bus*> TransportCatalogue::GetAllBuses() const {
-        std::vector<const Bus*> result;
-        result.reserve(name_to_bus_.size());
-        for(auto& [name, adress] : name_to_bus_) {
-            result.push_back(adress);
-        }
-        std::sort(result.begin(), result.end(), [](const Bus* lhs, const Bus* rhs) {
-            return lhs->name < rhs->name;
-        });
-        return result;
+    const std::deque<Bus>& TransportCatalogue::GetAllBuses() const {
+        return buses_;
     }
 
     void TransportCatalogue::AddBus(std::string name, const std::vector<std::string>& stop_names, bool is_roundtrip) {

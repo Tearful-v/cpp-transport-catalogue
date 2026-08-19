@@ -24,7 +24,7 @@ namespace transport_catalogue {
         const std::unordered_set<std::string_view>& GetBusesForStop(std::string_view stop_name) const;
         int GetStopsDistance(std::string_view from, std::string_view to) const;
         std::optional<domain::BusInfo> GetBusInfo(std::string_view name) const;
-        std::vector<const domain::Bus*> GetAllBuses() const;
+        const std::deque<domain::Bus>& GetAllBuses() const;
 
 
     private:
