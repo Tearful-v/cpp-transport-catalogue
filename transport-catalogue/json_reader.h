@@ -23,7 +23,7 @@ namespace json_reader {
 
     class JsonReader {
     public:
-        JsonReader(const json::Document& doc) : doc_(doc) {}
+        explicit JsonReader(const json::Document& doc) : doc_(doc) {}
 
         void FillCatalogue(transport_catalogue::TransportCatalogue &catalogue) const;
         json::Document ProcessRequests(const transport_catalogue::TransportCatalogue &catalogue) const;
