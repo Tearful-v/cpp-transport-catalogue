@@ -22,18 +22,11 @@ public:
 
 using Value = std::variant<std::nullptr_t, int, double, std::string, bool, Array, Dict>;
 
-class Node {
+class Node final : private Value {
 public:
    /* Реализуйте Node, используя std::variant */
 
-    Node();
-    Node(Array array);
-    Node(Dict map);
-    Node(int value);
-    Node(double value);
-    Node(std::string value);
-    Node(bool value);
-    Node(std::nullptr_t);
+    using Value::Value;
 
     const Array& AsArray() const;
     const Dict& AsMap() const;
@@ -53,9 +46,6 @@ public:
 
     bool operator ==(const Node& other) const;
     bool operator !=(const Node& other) const;
-
-private:
-    Value value_;
 };
 
 class Document {
