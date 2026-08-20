@@ -189,6 +189,8 @@ public:
     }
 
     virtual void AddPtr(std::unique_ptr<Object>&& object) = 0;
+
+    ~ObjectContainer() = default;
 };
 
 class Drawable {
