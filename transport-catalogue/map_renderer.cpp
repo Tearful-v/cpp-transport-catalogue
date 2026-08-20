@@ -164,9 +164,9 @@ namespace {
 
 namespace map_render {
 
-    svg::Document MapRender::RenderMap(const transport_catalogue::TransportCatalogue& catalogue) const {
+    svg::Document MapRender::RenderMap(const std::deque<domain::Bus>& source_buses) const {
         svg::Document doc;
-        std::vector<const domain::Bus*> buses = GetSortedBuses(catalogue.GetAllBuses());
+        std::vector<const domain::Bus*> buses = GetSortedBuses(source_buses);
         std::vector<geo::Coordinates> coords;
         for (auto bus : buses) {
             if (bus->route.empty()) {

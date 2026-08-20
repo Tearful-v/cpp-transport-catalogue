@@ -181,7 +181,7 @@ namespace {
 
         map_render::RenderSettings settings = GetRenderSettings();
         map_render::MapRender renderer(settings);
-        svg::Document map = renderer.RenderMap(catalogue);
+        svg::Document map = renderer.RenderMap(catalogue.GetAllBuses());
 
         std::ostringstream buf;
         map.Render(buf);

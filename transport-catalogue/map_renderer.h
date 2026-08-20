@@ -1,10 +1,11 @@
 #pragma once
 
+#include "domain.h"
 #include "svg.h"
-#include "transport_catalogue.h"
 
 #include <algorithm>
 #include <cmath>
+#include <deque>
 #include <optional>
 #include <utility>
 #include <vector>
@@ -100,9 +101,9 @@ namespace map_render{
 
     class MapRender {
     public:
-        MapRender(RenderSettings settings) : settings_(std::move(settings)) {}
+        explicit MapRender(RenderSettings settings) : settings_(std::move(settings)) {}
 
-        svg::Document RenderMap(const transport_catalogue::TransportCatalogue& catalogue) const;
+        svg::Document RenderMap(const std::deque<domain::Bus>& buses) const;
     private:
         RenderSettings settings_;
     };
