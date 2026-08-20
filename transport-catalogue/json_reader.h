@@ -25,18 +25,29 @@ namespace json_reader {
     public:
         explicit JsonReader(const json::Document& doc) : doc_(doc) {}
 
-        void FillCatalogue(transport_catalogue::TransportCatalogue &catalogue) const;
-        json::Document ProcessRequests(const transport_catalogue::TransportCatalogue &catalogue) const;
+        void FillCatalogue(transport_catalogue::TransportCatalogue& catalogue) const;
+        json::Document ProcessRequests(
+            const transport_catalogue::TransportCatalogue& catalogue) const;
         map_render::RenderSettings GetRenderSettings() const;
 
     private:
-        void ApplyStopCommands(const std::vector<StopCommand>& commands, transport_catalogue::TransportCatalogue& catalogue) const;
-        void ApplyBusCommands(const std::vector<BusCommand>& commands, transport_catalogue::TransportCatalogue& catalogue) const;
-        json::Dict MakeStopResponse(const json::Dict& request, const transport_catalogue::TransportCatalogue& catalogue) const;
-        json::Dict MakeBusResponse(const json::Dict& request, const transport_catalogue::TransportCatalogue& catalogue) const;
-        json::Dict MakeMapResponse(const json::Dict& request, const transport_catalogue::TransportCatalogue& catalogue) const;
+        void ApplyStopCommands(
+            const std::vector<StopCommand>& commands,
+            transport_catalogue::TransportCatalogue& catalogue) const;
+        void ApplyBusCommands(
+            const std::vector<BusCommand>& commands,
+            transport_catalogue::TransportCatalogue& catalogue) const;
+        json::Dict MakeStopResponse(
+            const json::Dict& request,
+            const transport_catalogue::TransportCatalogue& catalogue) const;
+        json::Dict MakeBusResponse(
+            const json::Dict& request,
+            const transport_catalogue::TransportCatalogue& catalogue) const;
+        json::Dict MakeMapResponse(
+            const json::Dict& request,
+            const transport_catalogue::TransportCatalogue& catalogue) const;
 
-        const json::Document &doc_;
+        const json::Document& doc_;
     };
 
 } //json_reader

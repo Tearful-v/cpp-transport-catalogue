@@ -10,7 +10,8 @@
 
 namespace {
 
-    std::vector<const domain::Bus*> GetSortedBuses(const std::deque<domain::Bus>& buses) {
+    std::vector<const domain::Bus*> GetSortedBuses(
+        const std::deque<domain::Bus>& buses) {
         std::vector<const domain::Bus*> result;
         result.reserve(buses.size());
 
@@ -18,15 +19,22 @@ namespace {
             result.push_back(&bus);
         }
 
-        std::sort(result.begin(), result.end(), [](const domain::Bus* lhs, const domain::Bus* rhs) {
-            return lhs->name < rhs->name;
-        });
+        std::sort(
+            result.begin(),
+            result.end(),
+            [](const domain::Bus* lhs, const domain::Bus* rhs) {
+                return lhs->name < rhs->name;
+            });
 
         return result;
     }
 
-    void AddBusLabel(svg::Document& doc, svg::Point point, const std::string& bus_name,
-                     const svg::Color& color, const map_render::RenderSettings& settings) {
+    void AddBusLabel(
+        svg::Document& doc,
+        svg::Point point,
+        const std::string& bus_name,
+        const svg::Color& color,
+        const map_render::RenderSettings& settings) {
         svg::Text underlayer;
         underlayer.SetPosition(point)
             .SetOffset(settings.bus_label_offset)
@@ -53,8 +61,11 @@ namespace {
         doc.Add(std::move(label));
     }
 
-    void AddStopLabel(svg::Document& doc, svg::Point point, const std::string& stop_name,
-                      const map_render::RenderSettings& settings) {
+    void AddStopLabel(
+        svg::Document& doc,
+        svg::Point point,
+        const std::string& stop_name,
+        const map_render::RenderSettings& settings) {
         svg::Text underlayer;
         underlayer.SetPosition(point)
             .SetOffset(settings.stop_label_offset)
@@ -79,8 +90,11 @@ namespace {
         doc.Add(std::move(label));
     }
 
-    void FillPolyline(const std::vector<const domain::Bus*> &buses, const map_render::RenderSettings &settings,
-                    svg::Document &doc, const map_render::SphereProjector &projector) {
+    void FillPolyline(
+        const std::vector<const domain::Bus*>& buses,
+        const map_render::RenderSettings& settings,
+        svg::Document& doc,
+        const map_render::SphereProjector& projector) {
         int index = 0;
         for (auto bus : buses) {
             if (bus->route.empty()) {
@@ -104,8 +118,11 @@ namespace {
         }
     }
 
-    void FillBusName(const std::vector<const domain::Bus*> &buses, const map_render::RenderSettings &settings,
-                    svg::Document &doc, const map_render::SphereProjector &projector) {
+    void FillBusName(
+        const std::vector<const domain::Bus*>& buses,
+        const map_render::RenderSettings& settings,
+        svg::Document& doc,
+        const map_render::SphereProjector& projector) {
         int index = 0;
         for (auto bus : buses) {
             if (bus->route.empty()) {
@@ -113,15 +130,27 @@ namespace {
             }
             const svg::Color& color = settings.color_palette[index % settings.color_palette.size()];
             ++index;
-            AddBusLabel(doc, projector(bus->route.front()->coords), bus->name, color, settings);
+            AddBusLabel(
+                doc,
+                projector(bus->route.front()->coords),
+                bus->name,
+                color,
+                settings);
 
-            if (!bus->is_roundtrip && bus->route.front()->name != bus->route[bus->route.size() / 2]->name) {
-                AddBusLabel(doc, projector(bus->route[bus->route.size() / 2]->coords), bus->name, color, settings);
+            if (!bus->is_roundtrip
+                && bus->route.front()->name != bus->route[bus->route.size() / 2]->name) {
+                AddBusLabel(
+                    doc,
+                    projector(bus->route[bus->route.size() / 2]->coords),
+                    bus->name,
+                    color,
+                    settings);
             }
         }
     }
 
-    std::vector<const domain::Stop*> CollectStops(const std::vector<const domain::Bus*> &buses) {
+    std::vector<const domain::Stop*> CollectStops(
+        const std::vector<const domain::Bus*>& buses) {
         std::map<std::string_view, const domain::Stop*> stops;
         for (auto bus : buses) {
             if (bus->route.empty()) {
@@ -142,15 +171,21 @@ namespace {
         return result;
     }
 
-    void FillStopName(const std::vector<const domain::Stop*> &stops, const map_render::RenderSettings &settings,
-                    svg::Document &doc, const map_render::SphereProjector &projector) {
+    void FillStopName(
+        const std::vector<const domain::Stop*>& stops,
+        const map_render::RenderSettings& settings,
+        svg::Document& doc,
+        const map_render::SphereProjector& projector) {
         for (auto stop : stops) {
             AddStopLabel(doc, projector(stop->coords), stop->name, settings);
         }
     }
 
-    void FillCircle(const std::vector<const domain::Stop*> &stops, const map_render::RenderSettings &settings,
-                    svg::Document &doc, const map_render::SphereProjector &projector) {
+    void FillCircle(
+        const std::vector<const domain::Stop*>& stops,
+        const map_render::RenderSettings& settings,
+        svg::Document& doc,
+        const map_render::SphereProjector& projector) {
         for (auto stop : stops) {
             svg::Circle circle;
             circle.SetCenter(projector(stop->coords))
@@ -164,7 +199,8 @@ namespace {
 
 namespace map_render {
 
-    svg::Document MapRender::RenderMap(const std::deque<domain::Bus>& source_buses) const {
+    svg::Document MapRender::RenderMap(
+        const std::deque<domain::Bus>& source_buses) const {
         svg::Document doc;
         std::vector<const domain::Bus*> buses = GetSortedBuses(source_buses);
         std::vector<geo::Coordinates> coords;

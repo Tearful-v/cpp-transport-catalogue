@@ -41,7 +41,9 @@ namespace {
 
 } // namespace
 
-    void JsonReader::ApplyStopCommands(const std::vector<StopCommand>& commands, transport_catalogue::TransportCatalogue& catalogue) const {
+    void JsonReader::ApplyStopCommands(
+        const std::vector<StopCommand>& commands,
+        transport_catalogue::TransportCatalogue& catalogue) const {
         for (const auto& com : commands) {
             catalogue.AddStop(com.name, com.coords);
         }
@@ -52,7 +54,9 @@ namespace {
         }
     }
 
-    void JsonReader::ApplyBusCommands(const std::vector<BusCommand>& commands, transport_catalogue::TransportCatalogue& catalogue) const {
+    void JsonReader::ApplyBusCommands(
+        const std::vector<BusCommand>& commands,
+        transport_catalogue::TransportCatalogue& catalogue) const {
         for (const BusCommand& bus : commands) {
             catalogue.AddBus(bus.name, bus.stops, bus.is_roundtrip);
         }
@@ -133,7 +137,9 @@ namespace {
         ApplyBusCommands(buses, catalogue);
     }
 
-    json::Dict JsonReader::MakeStopResponse(const json::Dict& request, const transport_catalogue::TransportCatalogue& catalogue) const {
+    json::Dict JsonReader::MakeStopResponse(
+        const json::Dict& request,
+        const transport_catalogue::TransportCatalogue& catalogue) const {
         json::Dict answer;
         answer["request_id"] = request.at("id").AsInt();
 
@@ -157,7 +163,9 @@ namespace {
         return answer;
     }
 
-    json::Dict JsonReader::MakeBusResponse(const json::Dict& request, const transport_catalogue::TransportCatalogue& catalogue) const {
+    json::Dict JsonReader::MakeBusResponse(
+        const json::Dict& request,
+        const transport_catalogue::TransportCatalogue& catalogue) const {
         json::Dict answer;
         answer["request_id"] = request.at("id").AsInt();
 
@@ -175,7 +183,9 @@ namespace {
         return answer;
     }
 
-    json::Dict JsonReader::MakeMapResponse(const json::Dict& request, const transport_catalogue::TransportCatalogue& catalogue) const {
+    json::Dict JsonReader::MakeMapResponse(
+        const json::Dict& request,
+        const transport_catalogue::TransportCatalogue& catalogue) const {
         json::Dict answer;
         answer["request_id"] = request.at("id").AsInt();
 
@@ -194,7 +204,8 @@ namespace {
         return answer;
     }
 
-    json::Document JsonReader::ProcessRequests(const transport_catalogue::TransportCatalogue &catalogue) const {
+    json::Document JsonReader::ProcessRequests(
+        const transport_catalogue::TransportCatalogue& catalogue) const {
         const json::Node& root = doc_.GetRoot();
         const json::Dict& root_dict = root.AsMap();
         const json::Array& stat_requests = root_dict.at("stat_requests").AsArray();
