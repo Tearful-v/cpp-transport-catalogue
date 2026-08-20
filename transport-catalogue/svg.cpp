@@ -210,7 +210,7 @@ void Document::Render(std::ostream& out) const {
         object->Render(context);
     }
 
-    out << "</svg>\n";
+    out << "</svg>";
 }
 
 // ---------- Ostream ------------------

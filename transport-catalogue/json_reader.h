@@ -45,7 +45,8 @@ namespace json_reader {
             const transport_catalogue::TransportCatalogue& catalogue) const;
         json::Dict MakeMapResponse(
             const json::Dict& request,
-            const transport_catalogue::TransportCatalogue& catalogue) const;
+            const transport_catalogue::TransportCatalogue& catalogue,
+            const map_render::MapRender& renderer) const;
 
         const json::Document& doc_;
     };

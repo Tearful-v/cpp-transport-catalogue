@@ -185,22 +185,17 @@ namespace {
 
     json::Dict JsonReader::MakeMapResponse(
         const json::Dict& request,
-        const transport_catalogue::TransportCatalogue& catalogue) const {
+        const transport_catalogue::TransportCatalogue& catalogue,
+        const map_render::MapRender& renderer) const {
         json::Dict answer;
         answer["request_id"] = request.at("id").AsInt();
 
-        map_render::RenderSettings settings = GetRenderSettings();
-        map_render::MapRender renderer(settings);
         svg::Document map = renderer.RenderMap(catalogue.GetAllBuses());
 
         std::ostringstream buf;
         map.Render(buf);
 
-        std::string map_str = buf.str();
-        if (!map_str.empty() && map_str.back() == '\n') {
-            map_str.pop_back();
-        }
-        answer["map"] = std::move(map_str);
+        answer["map"] = buf.str();
         return answer;
     }
 
@@ -210,6 +205,8 @@ namespace {
         const json::Dict& root_dict = root.AsMap();
         const json::Array& stat_requests = root_dict.at("stat_requests").AsArray();
 
+        map_render::RenderSettings settings = GetRenderSettings();
+        map_render::MapRender renderer(settings);
         json::Array answers;
 
         for (const json::Node& request : stat_requests) {
@@ -220,7 +217,7 @@ namespace {
             } else if (com.at("type").AsString() == "Bus") {
                 answers.push_back(MakeBusResponse(com, catalogue));
             } else if (com.at("type").AsString() == "Map") {
-                answers.push_back(MakeMapResponse(com, catalogue));
+                answers.push_back(MakeMapResponse(com, catalogue, renderer));
             }
         }
 
