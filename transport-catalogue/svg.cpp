@@ -4,6 +4,64 @@ namespace svg {
 
 using namespace std::literals;
 
+namespace {
+
+void RenderEscapedText(std::ostream& out, std::string_view text) {
+    for (char symbol : text) {
+        switch (symbol) {
+            case '"':
+                out << "&quot;";
+                break;
+            case '\'':
+                out << "&apos;";
+                break;
+            case '<':
+                out << "&lt;";
+                break;
+            case '>':
+                out << "&gt;";
+                break;
+            case '&':
+                out << "&amp;";
+                break;
+            default:
+                out.put(symbol);
+                break;
+        }
+    }
+}
+
+struct ColorPrint {
+
+    std::ostream& out;
+
+    void operator()(std::monostate) const {
+        out << "none";
+    }
+
+    void operator()(const std::string& str) const {
+        out << str;
+    }
+
+    void operator()(const Rgb& color) const {
+        out << "rgb("
+        << static_cast<int>(color.red) << ","
+        << static_cast<int>(color.green) << ","
+        << static_cast<int>(color.blue) << ")";
+    }
+
+    void operator()(const Rgba& color) const {
+        out << "rgba("
+            << static_cast<int>(color.red) << ","
+            << static_cast<int>(color.green) << ","
+            << static_cast<int>(color.blue) << ","
+            << color.opacity << ")";
+    }
+
+};
+
+} // namespace
+
 void Object::Render(const RenderContext& context) const {
     context.RenderIndent();
 
@@ -104,31 +162,6 @@ Text& Text::SetData(std::string data) {
     return *this;
 }
 
-void RenderEscapedText(std::ostream& out, std::string_view text) {
-    for (char symbol : text) {
-        switch (symbol) {
-            case '"':
-                out << "&quot;";
-                break;
-            case '\'':
-                out << "&apos;";
-                break;
-            case '<':
-                out << "&lt;";
-                break;
-            case '>':
-                out << "&gt;";
-                break;
-            case '&':
-                out << "&amp;";
-                break;
-            default:
-                out.put(symbol);
-                break;
-        }
-    }
-}
-
 void Text::RenderObject(const RenderContext& context) const {
     auto& out = context.out;
 
@@ -227,35 +260,6 @@ std::ostream& operator<<(std::ostream& out, StrokeLineJoin line_join) {
 }
 
 //----------------Color---------------
-
-struct ColorPrint {
-
-    std::ostream& out;
-
-    void operator()(std::monostate) const {
-        out << "none";
-    }
-
-    void operator()(const std::string& str) const {
-        out << str;
-    }
-
-    void operator()(const Rgb& color) const {
-        out << "rgb("
-        << static_cast<int>(color.red) << ","
-        << static_cast<int>(color.green) << ","
-        << static_cast<int>(color.blue) << ")";
-    }
-
-    void operator()(const Rgba& color) const {
-        out << "rgba("
-            << static_cast<int>(color.red) << ","
-            << static_cast<int>(color.green) << ","
-            << static_cast<int>(color.blue) << ","
-            << color.opacity << ")";
-    }
-
-};
 
 std::ostream& operator <<(std::ostream& out, const Color& color) {
     std::visit(ColorPrint{out}, color);
