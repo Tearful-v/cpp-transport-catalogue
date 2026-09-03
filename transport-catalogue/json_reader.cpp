@@ -91,7 +91,8 @@ namespace {
     }
 
 
-    void JsonReader::FillCatalogue(transport_catalogue::TransportCatalogue& catalogue) const {
+    void JsonReader::FillCatalogue(
+        transport_catalogue::TransportCatalogue& catalogue) const {
         std::vector<StopCommand> stops;
         std::vector<BusCommand> buses;
 
@@ -141,17 +142,15 @@ namespace {
     json::Node JsonReader::MakeStopResponse(
         const json::Dict& request,
         const transport_catalogue::TransportCatalogue& catalogue) const {
-        json::Builder builder;
-        auto dict = builder.StartDict();
-        dict.Key("request_id").Value(request.at("id").AsInt());
-
         const std::string& name = request.at("name").AsString();
         const domain::Stop* stop = catalogue.FindStop(name);
         if (stop == nullptr) {
-            dict.Key("error_message")
-                .Value(std::string("not found"))
-                .EndDict();
-            return builder.Build();
+            return json::Builder{}
+                .StartDict()
+                    .Key("request_id").Value(request.at("id").AsInt())
+                    .Key("error_message").Value(std::string("not found"))
+                .EndDict()
+                .Build();
         }
 
         const auto& buses = catalogue.GetBusesForStop(name);
@@ -163,54 +162,54 @@ namespace {
             buses_array.push_back(std::string(bus_name));
         }
 
-        dict.Key("buses")
-            .Value(std::move(buses_array))
-            .EndDict();
-        return  builder.Build();
+        return json::Builder{}
+            .StartDict()
+                .Key("request_id").Value(request.at("id").AsInt())
+                .Key("buses").Value(std::move(buses_array))
+            .EndDict()
+            .Build();
     }
 
     json::Node JsonReader::MakeBusResponse(
         const json::Dict& request,
         const transport_catalogue::TransportCatalogue& catalogue) const {
-        json::Builder builder;
-        auto dict = builder.StartDict();
-        dict.Key("request_id")
-            .Value(request.at("id").AsInt());
-
         const std::string& name = request.at("name").AsString();
         auto bus_info = catalogue.GetBusInfo(name);
         if (!bus_info) {
-            dict.Key("error_message")
-                .Value(std::string("not found"))
-                .EndDict();
-            return builder.Build();
+            return json::Builder{}
+                .StartDict()
+                    .Key("request_id").Value(request.at("id").AsInt())
+                    .Key("error_message").Value(std::string("not found"))
+                .EndDict()
+                .Build();
         }
 
-        dict.Key("curvature").Value(bus_info->curvature)
-            .Key("route_length").Value(static_cast<double>(bus_info->route_length))
-            .Key("stop_count").Value(static_cast<int>(bus_info->stops))
-            .Key("unique_stop_count").Value(static_cast<int>(bus_info->unique_stops))
-            .EndDict();
-        return builder.Build();
+        return json::Builder{}
+            .StartDict()
+                .Key("request_id").Value(request.at("id").AsInt())
+                .Key("curvature").Value(bus_info->curvature)
+                .Key("route_length").Value(bus_info->route_length)
+                .Key("stop_count").Value(static_cast<int>(bus_info->stops))
+                .Key("unique_stop_count").Value(static_cast<int>(bus_info->unique_stops))
+            .EndDict()
+            .Build();
     }
 
     json::Node JsonReader::MakeMapResponse(
         const json::Dict& request,
         const transport_catalogue::TransportCatalogue& catalogue,
         const map_render::MapRender& renderer) const {
-        json::Builder builder;
-        auto dict = builder.StartDict();
-        dict.Key("request_id").Value(request.at("id").AsInt());
-
         svg::Document map = renderer.RenderMap(catalogue.GetAllBuses());
 
         std::ostringstream buf;
         map.Render(buf);
 
-        dict.Key("map")
-            .Value(buf.str())
-            .EndDict();
-        return builder.Build();
+        return json::Builder{}
+            .StartDict()
+                .Key("request_id").Value(request.at("id").AsInt())
+                .Key("map").Value(buf.str())
+            .EndDict()
+            .Build();
     }
 
     json::Document JsonReader::ProcessRequests(
@@ -218,6 +217,8 @@ namespace {
         const json::Node& root = doc_.GetRoot();
         const json::Dict& root_dict = root.AsMap();
         const json::Array& stat_requests = root_dict.at("stat_requests").AsArray();
+        map_render::RenderSettings settings = GetRenderSettings();
+        map_render::MapRender renderer(settings);
 
         json::Array answers;
 
@@ -229,8 +230,6 @@ namespace {
             } else if (com.at("type").AsString() == "Bus") {
                 answers.push_back(MakeBusResponse(com, catalogue));
             } else if (com.at("type").AsString() == "Map") {
-                map_render::RenderSettings settings = GetRenderSettings();
-                map_render::MapRender renderer(settings);
                 answers.push_back(MakeMapResponse(com, catalogue, renderer));
             }
         }
