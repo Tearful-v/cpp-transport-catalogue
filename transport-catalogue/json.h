@@ -27,9 +27,12 @@ public:
    /* Реализуйте Node, используя std::variant */
 
     using Value::Value;
+    Node(Value value);
 
     const Array& AsArray() const;
+    Array& AsArray();
     const Dict& AsMap() const;
+    Dict& AsMap();
     int AsInt() const;
     const std::string& AsString() const;
     double AsDouble() const;

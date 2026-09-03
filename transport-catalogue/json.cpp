@@ -188,6 +188,10 @@ Node LoadNode(std::istream& input) {
 
 //======================================================
 
+Node::Node(Value value)
+    : Value(std::move(value)) {
+}
+
 const Array& Node::AsArray() const {
     if (!IsArray()) {
         throw std::logic_error("Not array");
@@ -195,7 +199,21 @@ const Array& Node::AsArray() const {
     return std::get<Array>(*this);
 }
 
+Array& Node::AsArray() {
+    if (!IsArray()) {
+        throw std::logic_error("Not array");
+    }
+    return std::get<Array>(*this);
+}
+
 const Dict& Node::AsMap() const {
+    if (!IsMap()) {
+        throw std::logic_error("Not dict");
+    }
+    return std::get<Dict>(*this);
+}
+
+Dict& Node::AsMap() {
     if (!IsMap()) {
         throw std::logic_error("Not dict");
     }
