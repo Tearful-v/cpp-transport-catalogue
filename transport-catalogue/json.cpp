@@ -2,15 +2,13 @@
 #include <iostream>
 #include <string_view>
 
-using namespace std;
-
 namespace json {
 
 namespace {
 
-Node LoadNode(istream& input);
+Node LoadNode(std::istream& input);
 
-Node LoadArray(istream& input) {
+Node LoadArray(std::istream& input) {
     Array result;
     char c;
     if (!(input >> c)) {
@@ -37,8 +35,8 @@ Node LoadArray(istream& input) {
     }
 }
 
-Node LoadNum(istream& input) {
-    string number;
+Node LoadNum(std::istream& input) {
+    std::string number;
 
     if (input.peek() == '-') {
         number += input.get();
@@ -73,13 +71,13 @@ Node LoadNum(istream& input) {
     }
 
     if (is_double) {
-        return Node(stod(number));
+        return Node(std::stod(number));
     }
 
-    return Node(stoi(number));
+    return Node(std::stoi(number));
 }
 
-Node LoadString(istream& input) {
+Node LoadString(std::istream& input) {
     std::string result;
     char ch;
     while (input.get(ch)) {
@@ -110,7 +108,7 @@ Node LoadString(istream& input) {
     throw ParsingError("string not closed");
 }
 
-Node LoadDict(istream& input) {
+Node LoadDict(std::istream& input) {
     Dict result;
     char c;
 
@@ -146,7 +144,7 @@ Node LoadDict(istream& input) {
         }
     }
 }
-void ReadLiteral(istream& input, string_view expected) {
+void ReadLiteral(std::istream& input, std::string_view expected) {
     for (char expected_char : expected) {
         char actual_char;
 
@@ -156,7 +154,7 @@ void ReadLiteral(istream& input, string_view expected) {
     }
 }
 
-Node LoadNode(istream& input) {
+Node LoadNode(std::istream& input) {
     char c;
     input >> c;
 
@@ -279,7 +277,7 @@ bool Node::operator !=(const Node& other) const {
 
 //==================================================================
 
-void PrintString(const string& str, ostream& output) {
+void PrintString(const std::string& str, std::ostream& output) {
     output << '"';
 
     for (char c : str) {
@@ -301,7 +299,7 @@ void PrintString(const string& str, ostream& output) {
     output << '"';
 }
 
-void PrintNode(const Node& node, ostream& output) {
+void PrintNode(const Node& node, std::ostream& output) {
     if (node.IsNull()) {
         output << "null";
     } else if (node.IsInt()) {
@@ -354,7 +352,7 @@ const Node& Document::GetRoot() const {
     return root_;
 }
 
-Document Load(istream& input) {
+Document Load(std::istream& input) {
     Node root = LoadNode(input);
     char c;
     if (input >> c) {
@@ -371,7 +369,7 @@ bool Document::operator!=(const Document& other) const {
     return !(*this == other);
 }
 
-void Print(const Document& doc, ostream& output) {
+void Print(const Document& doc, std::ostream& output) {
     PrintNode(doc.GetRoot(), output);
 }
 
