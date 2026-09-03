@@ -37,13 +37,13 @@ namespace json_reader {
         void ApplyBusCommands(
             const std::vector<BusCommand>& commands,
             transport_catalogue::TransportCatalogue& catalogue) const;
-        json::Dict MakeStopResponse(
+        json::Node MakeStopResponse(
             const json::Dict& request,
             const transport_catalogue::TransportCatalogue& catalogue) const;
-        json::Dict MakeBusResponse(
+        json::Node MakeBusResponse(
             const json::Dict& request,
             const transport_catalogue::TransportCatalogue& catalogue) const;
-        json::Dict MakeMapResponse(
+        json::Node MakeMapResponse(
             const json::Dict& request,
             const transport_catalogue::TransportCatalogue& catalogue,
             const map_render::MapRender& renderer) const;
