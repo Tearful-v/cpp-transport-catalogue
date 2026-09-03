@@ -62,6 +62,11 @@ namespace json {
         return *this;
     }
 
+    Builder& Builder::NodeValue(json::Node node) {
+        (void) AddNode(std::move(node));
+        return *this;
+    }
+
     Builder::DictItemContext Builder::StartDict() {
         StartContainer(Node{Dict{}});
         return DictItemContext{*this};
@@ -110,8 +115,18 @@ namespace json {
         return DictItemContext{builder_};
     }
 
+    Builder::DictItemContext Builder::KeyContext::NodeValue(json::Node node) {
+        builder_.NodeValue(std::move(node));
+        return DictItemContext{builder_};
+    }
+
     Builder::ArrayItemContext Builder::ArrayItemContext::Value(json::Value value) {
         builder_.Value(std::move(value));
+        return ArrayItemContext{builder_};
+    }
+
+    Builder::ArrayItemContext Builder::ArrayItemContext::NodeValue(json::Node node) {
+        builder_.NodeValue(std::move(node));
         return ArrayItemContext{builder_};
     }
 
@@ -123,6 +138,9 @@ namespace json {
     }
     Builder& Builder::BaseContext::Value(json::Value value) {
         return builder_.Value(std::move(value));
+    }
+    Builder& Builder::BaseContext::NodeValue(json::Node node) {
+        return builder_.NodeValue(std::move(node));
     }
     Builder::DictItemContext Builder::BaseContext::StartDict() {
         return builder_.StartDict();

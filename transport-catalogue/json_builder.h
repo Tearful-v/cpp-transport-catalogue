@@ -21,6 +21,7 @@ public:
 
     KeyContext Key(std::string key);
     Builder& Value(json::Value value);
+    Builder& NodeValue(json::Node node);
 
     DictItemContext StartDict();
     ArrayItemContext StartArray();
@@ -47,6 +48,7 @@ public:
     json::Node Build();
     KeyContext Key(std::string key);
     Builder& Value(json::Value value);
+    Builder& NodeValue(json::Node node);
     DictItemContext StartDict();
     ArrayItemContext StartArray();
     Builder& EndDict();
@@ -61,6 +63,7 @@ class Builder::KeyContext : public Builder::BaseContext {
 public:
     using BaseContext::BaseContext;
     DictItemContext Value(json::Value value);
+    DictItemContext NodeValue(json::Node node);
 
     json::Node Build() = delete;
     KeyContext Key(std::string key) = delete;
@@ -75,6 +78,7 @@ public:
 
     json::Node Build() = delete;
     Builder& Value(json::Value value) = delete;
+    Builder& NodeValue(json::Node node) = delete;
     DictItemContext StartDict() = delete;
     ArrayItemContext StartArray() = delete;
     Builder& EndArray() = delete;
@@ -85,6 +89,7 @@ class Builder::ArrayItemContext : public Builder::BaseContext {
 public:
     using BaseContext::BaseContext;
     ArrayItemContext Value(json::Value value);
+    ArrayItemContext NodeValue(json::Node node);
 
     json::Node Build() = delete;
     KeyContext Key(std::string key) = delete;

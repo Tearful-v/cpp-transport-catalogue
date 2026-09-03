@@ -220,21 +220,22 @@ namespace {
         map_render::RenderSettings settings = GetRenderSettings();
         map_render::MapRender renderer(settings);
 
-        json::Array answers;
+        json::Builder builder;
+        auto answers = builder.StartArray();
 
         for (const json::Node& request : stat_requests) {
             const json::Dict& com = request.AsMap();
 
             if (com.at("type").AsString() == "Stop") {
-                answers.push_back(MakeStopResponse(com, catalogue));
+                answers.NodeValue(MakeStopResponse(com, catalogue));
             } else if (com.at("type").AsString() == "Bus") {
-                answers.push_back(MakeBusResponse(com, catalogue));
+                answers.NodeValue(MakeBusResponse(com, catalogue));
             } else if (com.at("type").AsString() == "Map") {
-                answers.push_back(MakeMapResponse(com, catalogue, renderer));
+                answers.NodeValue(MakeMapResponse(com, catalogue, renderer));
             }
         }
 
-        return json::Document{answers};
+        return json::Document{answers.EndArray().Build()};
     }
 
 } //json_reader
