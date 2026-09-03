@@ -104,6 +104,7 @@ namespace map_render{
         explicit MapRender(RenderSettings settings) : settings_(std::move(settings)) {}
 
         svg::Document RenderMap(const std::deque<domain::Bus>& buses) const;
+
     private:
         RenderSettings settings_;
     };

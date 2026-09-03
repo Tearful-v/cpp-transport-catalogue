@@ -27,7 +27,10 @@ using domain::BusInfo;
         return buses_;
     }
 
-    void TransportCatalogue::AddBus(std::string name, const std::vector<std::string>& stop_names, bool is_roundtrip) {
+    void TransportCatalogue::AddBus(
+        std::string name,
+        const std::vector<std::string>& stop_names,
+        bool is_roundtrip) {
         std::vector<const Stop*> route;
         route.reserve(stop_names.size());
 
@@ -59,7 +62,8 @@ using domain::BusInfo;
         return it->second;
     }
 
-    const std::unordered_set<std::string_view>& TransportCatalogue::GetBusesForStop(std::string_view stop_name) const {
+    const std::unordered_set<std::string_view>& TransportCatalogue::GetBusesForStop(
+        std::string_view stop_name) const {
         static const std::unordered_set<std::string_view> empty_buses;
 
         auto it = stop_to_bus_.find(stop_name);
@@ -80,7 +84,10 @@ using domain::BusInfo;
         return it->second;
     }
 
-    void TransportCatalogue::SetStopsDistance(std::string_view from, std::string_view to, int distance) {
+    void TransportCatalogue::SetStopsDistance(
+        std::string_view from,
+        std::string_view to,
+        int distance) {
         const Stop* from_stop = FindStop(from);
         const Stop* to_stop = FindStop(to);
 
@@ -91,7 +98,9 @@ using domain::BusInfo;
         stops_distance_[{from_stop->name, to_stop->name}] = distance;
     }
 
-    int TransportCatalogue::GetStopsDistance(std::string_view from, std::string_view to) const {
+    int TransportCatalogue::GetStopsDistance(
+        std::string_view from,
+        std::string_view to) const {
         auto it = stops_distance_.find({from, to});
         if (it != stops_distance_.end()) {
             return it->second;
@@ -105,20 +114,27 @@ using domain::BusInfo;
         return 0;
     }
 
-    std::optional<BusInfo> TransportCatalogue::GetBusInfo(std::string_view name) const {
+    std::optional<BusInfo> TransportCatalogue::GetBusInfo(
+        std::string_view name) const {
         const Bus* bus = FindBus(name);
         if (bus == nullptr) {
             return std::nullopt;
         }
 
         size_t stops = bus->route.size();
-        std::unordered_set<const Stop*> unique_stops(bus->route.begin(), bus->route.end());
+        std::unordered_set<const Stop*> unique_stops(
+            bus->route.begin(),
+            bus->route.end());
 
         int route_length = 0;
         double geo_length = 0.0;
         for (size_t i = 1; i < bus->route.size(); ++i) {
-            route_length += GetStopsDistance(bus->route[i - 1]->name, bus->route[i]->name);
-            geo_length += geo::ComputeDistance(bus->route[i - 1]->coords, bus->route[i]->coords);
+            route_length += GetStopsDistance(
+                bus->route[i - 1]->name,
+                bus->route[i]->name);
+            geo_length += geo::ComputeDistance(
+                bus->route[i - 1]->coords,
+                bus->route[i]->coords);
         }
 
         double curvature = static_cast<double>(route_length) / geo_length;
