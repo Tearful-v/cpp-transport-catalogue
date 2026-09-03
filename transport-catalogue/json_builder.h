@@ -10,15 +10,13 @@
 
 namespace json {
 
-class Builder;
-class BaseContext;
-class DictItemContext;
-class ArrayItemContext;
-class KeyContext;
-
-
 class Builder {
 public:
+    class BaseContext;
+    class DictItemContext;
+    class ArrayItemContext;
+    class KeyContext;
+
     json::Node Build();
 
     KeyContext Key(std::string key);
@@ -40,7 +38,7 @@ private:
 };
 
 
-class BaseContext {
+class Builder::BaseContext {
 public:
     explicit BaseContext(Builder& builder)
         : builder_(builder) {
@@ -59,7 +57,7 @@ protected:
 };
 
 
-class KeyContext : public BaseContext {
+class Builder::KeyContext : public Builder::BaseContext {
 public:
     using BaseContext::BaseContext;
     DictItemContext Value(json::Value value);
@@ -71,7 +69,7 @@ public:
 };
 
 
-class DictItemContext : public BaseContext {
+class Builder::DictItemContext : public Builder::BaseContext {
 public:
     using BaseContext::BaseContext;
 
@@ -83,7 +81,7 @@ public:
 };
 
 
-class ArrayItemContext : public BaseContext {
+class Builder::ArrayItemContext : public Builder::BaseContext {
 public:
     using BaseContext::BaseContext;
     ArrayItemContext Value(json::Value value);

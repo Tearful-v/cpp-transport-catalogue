@@ -4,7 +4,7 @@ namespace json {
 
 //------------------BaseContext-------------
 
-    KeyContext Builder::Key(std::string key) {
+    Builder::KeyContext Builder::Key(std::string key) {
         if (opened_container_.empty() || !opened_container_.top()->IsMap()) {
             throw std::logic_error("Key outside dict");
         }
@@ -63,13 +63,13 @@ namespace json {
         return *this;
     }
 
-    DictItemContext Builder::StartDict() {
+    Builder::DictItemContext Builder::StartDict() {
         Node* new_dict = AddNode(Node{Dict{}});
         opened_container_.push(new_dict);
         return DictItemContext{*this};
     }
 
-    ArrayItemContext Builder::StartArray() {
+    Builder::ArrayItemContext Builder::StartArray() {
         Node* new_array = AddNode(Node{Array{}});
         opened_container_.push(new_array);
         return ArrayItemContext{*this};
@@ -102,35 +102,35 @@ namespace json {
 
     //------------ BaseContext ---------------
 
-    DictItemContext KeyContext::Value(json::Value value) {
+    Builder::DictItemContext Builder::KeyContext::Value(json::Value value) {
         builder_.Value(std::move(value));
         return DictItemContext{builder_};
     }
 
-    ArrayItemContext ArrayItemContext::Value(json::Value value) {
+    Builder::ArrayItemContext Builder::ArrayItemContext::Value(json::Value value) {
         builder_.Value(std::move(value));
         return ArrayItemContext{builder_};
     }
 
-    json::Node BaseContext::Build() {
+    json::Node Builder::BaseContext::Build() {
         return builder_.Build();
     }
-    KeyContext BaseContext::Key(std::string key) {
+    Builder::KeyContext Builder::BaseContext::Key(std::string key) {
         return builder_.Key(std::move(key));
     }
-    Builder& BaseContext::Value(json::Value value) {
+    Builder& Builder::BaseContext::Value(json::Value value) {
         return builder_.Value(std::move(value));
     }
-    DictItemContext BaseContext::StartDict() {
+    Builder::DictItemContext Builder::BaseContext::StartDict() {
         return builder_.StartDict();
     }
-    ArrayItemContext BaseContext::StartArray() {
+    Builder::ArrayItemContext Builder::BaseContext::StartArray() {
         return builder_.StartArray();
     }
-    Builder& BaseContext::EndDict() {
+    Builder& Builder::BaseContext::EndDict() {
         return builder_.EndDict();
     }
-    Builder& BaseContext::EndArray() {
+    Builder& Builder::BaseContext::EndArray() {
         return builder_.EndArray();
     }
 
