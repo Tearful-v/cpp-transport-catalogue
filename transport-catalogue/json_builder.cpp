@@ -18,17 +18,16 @@ namespace json {
 
     json::Node* Builder::AddNode(Node node) {
         if (opened_container_.empty()) {
-            if (root_is_ready_) {
+            if (root_.has_value()) {
                 throw std::logic_error("root already exist");
             }
             root_ = std::move(node);
-            root_is_ready_ = true;
-            return &root_;
+            return &root_.value();
         }
 
         auto* container = opened_container_.top();
         if (container->IsArray()) {
-            auto& array = const_cast<json::Array&>(container->AsArray());
+            auto& array = container->AsArray();
             array.push_back(std::move(node));
             return &array.back();
         }
@@ -37,7 +36,7 @@ namespace json {
             if (!key_.has_value()) {
                 throw std::logic_error("Expected key before value");
             }
-            auto& dict = const_cast<json::Dict&>(container->AsMap());
+            auto& dict = container->AsMap();
             auto& it = dict[*key_] = std::move(node);
             key_.reset();
             return &it;
@@ -47,32 +46,36 @@ namespace json {
     }
 
     json::Node Builder::Build() {
-        if (!root_is_ready_) {
+        if (!root_.has_value()) {
             throw std::logic_error("JSON is empty");
         } if (!opened_container_.empty()) {
             throw  std::logic_error("JSON is not ready yet");
         }
-        return std::move(root_);
+        Node result = std::move(root_.value());
+        root_.reset();
+        return result;
     }
 
     Builder& Builder::Value(json::Value value) {
-        json::Node node = std::visit([](auto&& value){
-            return Node{std::move(value)};
-        }, std::move(value));
+        json::Node node{std::move(value)};
         (void) AddNode(std::move(node));
         return *this;
     }
 
     Builder::DictItemContext Builder::StartDict() {
-        Node* new_dict = AddNode(Node{Dict{}});
-        opened_container_.push(new_dict);
+        StartContainer(Node{Dict{}});
         return DictItemContext{*this};
     }
 
     Builder::ArrayItemContext Builder::StartArray() {
-        Node* new_array = AddNode(Node{Array{}});
-        opened_container_.push(new_array);
+        StartContainer(Node{Array{}});
         return ArrayItemContext{*this};
+    }
+
+    json::Node* Builder::StartContainer(Node node) {
+        Node* new_container = AddNode(std::move(node));
+        opened_container_.push(new_container);
+        return new_container;
     }
 
     Builder& Builder::EndDict() {

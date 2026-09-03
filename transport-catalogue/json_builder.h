@@ -30,11 +30,11 @@ public:
 
 private:
     json::Node* AddNode(Node node);
+    json::Node* StartContainer(Node node);
 
-    json::Node root_;
+    std::optional<json::Node> root_;
     std::optional<std::string> key_;
     std::stack<json::Node*> opened_container_;
-    bool root_is_ready_ = false;
 };
 
 
