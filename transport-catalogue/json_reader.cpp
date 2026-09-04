@@ -3,6 +3,7 @@
 #include "json.h"
 
 #include <algorithm>
+#include <optional>
 #include <string>
 #include <sstream>
 #include <string_view>
@@ -217,8 +218,7 @@ namespace {
         const json::Node& root = doc_.GetRoot();
         const json::Dict& root_dict = root.AsMap();
         const json::Array& stat_requests = root_dict.at("stat_requests").AsArray();
-        map_render::RenderSettings settings = GetRenderSettings();
-        map_render::MapRender renderer(settings);
+        std::optional<map_render::MapRender> renderer;
 
         json::Builder builder;
         auto answers = builder.StartArray();
@@ -231,7 +231,10 @@ namespace {
             } else if (com.at("type").AsString() == "Bus") {
                 answers.NodeValue(MakeBusResponse(com, catalogue));
             } else if (com.at("type").AsString() == "Map") {
-                answers.NodeValue(MakeMapResponse(com, catalogue, renderer));
+                if (!renderer.has_value()) {
+                    renderer.emplace(GetRenderSettings());
+                }
+                answers.NodeValue(MakeMapResponse(com, catalogue, *renderer));
             }
         }
 
