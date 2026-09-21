@@ -2,6 +2,7 @@
 #include "json.h"
 #include "transport_catalogue.h"
 #include "map_renderer.h"
+#include "transport_router.h"
 
 #include <map>
 #include <string>
@@ -29,6 +30,7 @@ namespace json_reader {
         json::Document ProcessRequests(
             const transport_catalogue::TransportCatalogue& catalogue) const;
         map_render::RenderSettings GetRenderSettings() const;
+        transport_router::RouterSettings GetRouterSettings() const;
 
     private:
         void ApplyStopCommands(
@@ -47,6 +49,9 @@ namespace json_reader {
             const json::Dict& request,
             const transport_catalogue::TransportCatalogue& catalogue,
             const map_render::MapRender& renderer) const;
+        json::Node MakeRouterResponce(
+            const json::Dict& request,
+            const transport_router::TransportRouter& router) const;
 
         const json::Document& doc_;
     };

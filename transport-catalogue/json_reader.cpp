@@ -91,6 +91,16 @@ namespace {
         return settings;
     }
 
+    transport_router::RouterSettings JsonReader::GetRouterSettings() const {
+        transport_router::RouterSettings settings;
+        const json::Node &root = doc_.GetRoot();
+        const json::Dict &root_dict = root.AsMap();
+        const json::Dict &router_request = root_dict.at("routing_settings").AsMap();
+        settings.wait_time = router_request.at("bus_wait_time").AsDouble();
+        settings.bus_speed = router_request.at("bus_velocity").AsDouble();
+        return settings;
+    }
+
 
     void JsonReader::FillCatalogue(
         transport_catalogue::TransportCatalogue& catalogue) const {
@@ -213,12 +223,19 @@ namespace {
             .Build();
     }
 
+    json::Node JsonReader::MakeRouterResponce(
+            const json::Dict& request,
+            const transport_router::TransportRouter& router) const {
+
+            }
+
     json::Document JsonReader::ProcessRequests(
         const transport_catalogue::TransportCatalogue& catalogue) const {
         const json::Node& root = doc_.GetRoot();
         const json::Dict& root_dict = root.AsMap();
         const json::Array& stat_requests = root_dict.at("stat_requests").AsArray();
         std::optional<map_render::MapRender> renderer;
+        std::optional<transport_router::TransportRouter> router;
 
         json::Builder builder;
         auto answers = builder.StartArray();
@@ -235,6 +252,11 @@ namespace {
                     renderer.emplace(GetRenderSettings());
                 }
                 answers.NodeValue(MakeMapResponse(com, catalogue, *renderer));
+            } else if (com.at("type").AsString() == "Route") {
+                if (!router.has_value()) {
+                    router.emplace(GetRouterSettings(), catalogue);
+                }
+                answers.NodeValue(MakeRouterResponce(com, *router));
             }
         }
 
