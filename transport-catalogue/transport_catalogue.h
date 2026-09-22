@@ -34,6 +34,7 @@ namespace transport_catalogue {
             std::string_view to) const;
         std::optional<domain::BusInfo> GetBusInfo(std::string_view name) const;
         const std::deque<domain::Bus>& GetAllBuses() const;
+        const std::deque<domain::Stop>& GetAllStops() const;
 
 
     private:

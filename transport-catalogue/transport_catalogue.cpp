@@ -27,6 +27,10 @@ using domain::BusInfo;
         return buses_;
     }
 
+    const std::deque<domain::Stop>& TransportCatalogue::GetAllStops() const {
+        return stops_;
+    }
+
     void TransportCatalogue::AddBus(
         std::string name,
         const std::vector<std::string>& stop_names,
