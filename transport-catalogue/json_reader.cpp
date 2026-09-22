@@ -226,8 +226,45 @@ namespace {
     json::Node JsonReader::MakeRouterResponce(
             const json::Dict& request,
             const transport_router::TransportRouter& router) const {
+        const auto res = router.BuildRoute(
+            request.at("from").AsString(),
+            request.at("to").AsString()
+        );
 
-            }
+        if (!res) {
+            return json::Builder{}
+            .StartDict()
+                .Key("request_id").Value(request.at("id").AsInt())
+                .Key("error_message").Value("not found")
+            .EndDict()
+            .Build();
+        }
+
+        json::Builder builder;
+        builder.StartDict()
+            .Key("request_id").Value(request.at("id").AsInt())
+            .Key("total_time").Value(res->total_time)
+            .Key("items").StartArray();
+
+        for (const auto& edge : res->edges) {
+        builder.StartDict()
+            .Key("type").Value(std::string("Wait"))
+            .Key("stop_name").Value(std::string(edge.wait_stop))
+            .Key("time").Value(router.GetWaitTime())
+        .EndDict()
+        .StartDict()
+            .Key("type").Value(std::string("Bus"))
+            .Key("bus").Value(std::string(edge.bus_name))
+            .Key("span_count").Value(edge.span_count)
+            .Key("time").Value(edge.ride_time)
+        .EndDict();
+    }
+
+    return builder
+        .EndArray()
+        .EndDict()
+        .Build();
+    }
 
     json::Document JsonReader::ProcessRequests(
         const transport_catalogue::TransportCatalogue& catalogue) const {
