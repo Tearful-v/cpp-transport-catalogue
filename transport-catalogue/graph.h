@@ -17,6 +17,13 @@ struct Edge {
     Weight weight;
 };
 
+struct EdgeInfo {
+    std::string_view bus_name;
+    std::string_view wait_stop;
+    int span_count = 0;
+    double ride_time = 0.0;
+};
+
 template <typename Weight>
 class DirectedWeightedGraph {
 private:
