@@ -8,6 +8,7 @@
 #include <sstream>
 #include <string_view>
 #include <cstdint>
+#include <variant>
 #include <vector>
 
 namespace json_reader {
@@ -40,6 +41,27 @@ namespace {
             color[3].AsDouble()
         };
     }
+
+    struct RouteItemWriter {
+        void operator()(const transport_router::WaitItem& item) const {
+            builder.StartDict()
+                .Key("type").Value(std::string("Wait"))
+                .Key("stop_name").Value(std::string(item.stop_name))
+                .Key("time").Value(item.time)
+            .EndDict();
+        }
+
+        void operator()(const transport_router::BusItem& item) const {
+            builder.StartDict()
+                .Key("type").Value(std::string("Bus"))
+                .Key("bus").Value(std::string(item.bus_name))
+                .Key("span_count").Value(item.span_count)
+                .Key("time").Value(item.time)
+            .EndDict();
+        }
+
+        json::Builder& builder;
+    };
 
 } // namespace
 
@@ -233,11 +255,11 @@ namespace {
 
         if (!res) {
             return json::Builder{}
-            .StartDict()
-                .Key("request_id").Value(request.at("id").AsInt())
-                .Key("error_message").Value("not found")
-            .EndDict()
-            .Build();
+                .StartDict()
+                    .Key("request_id").Value(request.at("id").AsInt())
+                    .Key("error_message").Value(std::string("not found"))
+                .EndDict()
+                .Build();
         }
 
         json::Builder builder;
@@ -246,24 +268,14 @@ namespace {
             .Key("total_time").Value(res->total_time)
             .Key("items").StartArray();
 
-        for (const auto& edge : res->edges) {
-        builder.StartDict()
-            .Key("type").Value(std::string("Wait"))
-            .Key("stop_name").Value(std::string(edge.wait_stop))
-            .Key("time").Value(router.GetWaitTime())
-        .EndDict()
-        .StartDict()
-            .Key("type").Value(std::string("Bus"))
-            .Key("bus").Value(std::string(edge.bus_name))
-            .Key("span_count").Value(edge.span_count)
-            .Key("time").Value(edge.ride_time)
-        .EndDict();
-    }
+        for (const auto& item : res->items) {
+            std::visit(RouteItemWriter{builder}, item);
+        }
 
-    return builder
-        .EndArray()
-        .EndDict()
-        .Build();
+        return builder
+            .EndArray()
+            .EndDict()
+            .Build();
     }
 
     json::Document JsonReader::ProcessRequests(
